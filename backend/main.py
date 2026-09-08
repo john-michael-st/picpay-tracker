@@ -131,12 +131,13 @@ def obter_resumo(db: Session = Depends(get_db)):
             "gasto": val
         })
         
+    from fastapi.encoders import jsonable_encoder
     return {
         "gasto_total": resumo_calc["total_mes"],
         "teto_normal": resumo_calc["teto_normal"],
-        "reserva": 200.0, # teto_emergencial - teto_normal = 200
+        "reserva": 200.0,
         "categorias": categorias,
-        "ultimos_lancamentos": ultimos
+        "ultimos_lancamentos": jsonable_encoder(ultimos)
     }
 
 @app.get("/historico", response_model=List[GastoResponse])
