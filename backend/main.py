@@ -110,8 +110,34 @@ def criar_gasto(gasto_in: GastoCreate, x_token: str = Header(None, alias="X-Toke
 @app.get("/resumo")
 def obter_resumo(db: Session = Depends(get_db)):
     agora = datetime.utcnow()
-    resumo = calcular_resumo_mes(db, agora.month, agora.year)
-    return resumo
+    resumo_calc = calcular_resumo_mes(db, agora.month, agora.year)
+    
+    ultimos = db.query(Gasto).filter(Gasto.mes == agora.month, Gasto.ano == agora.year).order_by(Gasto.data.desc()).limit(5).all()
+    
+    icones = {
+        "Alimentação": "🍔",
+        "Transporte": "🚗",
+        "Saúde": "💊",
+        "Lazer": "🎉",
+        "Educação": "📚",
+        "Moradia": "🏠"
+    }
+    
+    categorias = []
+    for cat, val in resumo_calc["gastos_por_categoria"].items():
+        categorias.append({
+            "nome": cat,
+            "icone": icones.get(cat, "🛒"),
+            "gasto": val
+        })
+        
+    return {
+        "gasto_total": resumo_calc["total_mes"],
+        "teto_normal": resumo_calc["teto_normal"],
+        "reserva": 200.0, # teto_emergencial - teto_normal = 200
+        "categorias": categorias,
+        "ultimos_lancamentos": ultimos
+    }
 
 @app.get("/historico", response_model=List[GastoResponse])
 def obter_historico(mes: Optional[int] = None, ano: Optional[int] = None, db: Session = Depends(get_db)):
