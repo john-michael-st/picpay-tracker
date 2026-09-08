@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: picpay-tracker-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SECRET_TOKEN
+        sync: false
